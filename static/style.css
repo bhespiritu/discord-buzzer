@@ -1,0 +1,15 @@
+
+.card
+{
+	background-color: #EEEEEEEE;
+	text-align: center;
+	padding: 0 50 0 50;
+	margin: 0 50 0 50;
+	font-size: 4vw;
+	font-family: "Bangers", cursive;
+}
+
+.selected
+{
+	background-color: #aaeeaa;
+}

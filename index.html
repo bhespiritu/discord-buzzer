@@ -1,0 +1,131 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="static/style.css">
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+	
+    <title>NameLive</title>
+  </head>
+  <body>
+    <div class="container">
+	  <div class="d-flex" id ="cardRow">
+		<div class="flex-fill">
+			<div class="border rounded card">
+				One of three columns
+			</div>
+		</div>
+		<div class="flex-fill">
+			<div class="border rounded card">
+				One of three columns
+			</div>
+		</div>
+		<div class="flex-fill">
+			<div class="border rounded card">
+				One of three columns
+			</div>
+		</div>
+	  </div>
+	</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.0/socket.io.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+      const socket = io("http://localhost:8080");
+	  
+	var players = {};
+
+	$rowHTML = $("#cardRow");
+
+	function sendMsg() {
+	socket.emit("message", "HELLO WORLD");
+	}
+
+	function addPlayer(name)
+	{
+		players[name] = 0;
+		updateHTML();
+	}
+
+	function removePlayer(name)
+	{
+		delete players[name];
+		updateHTML();
+	}
+
+	function incPlayer(name)
+	{
+		players[name]++;
+		updateHTML();
+	}
+
+	function updateHTML()
+	{
+		$rowHTML.empty();
+		for (const player in players)
+		{
+			$rowHTML.append('<div class="flex-fill"><div class="border rounded card" id="'+player+'">' + player + "<br>" + players[player]+ '</div></div>');
+		}
+	}
+	
+	var open = true;
+	function selectPlayer(name)
+	{
+		if (!open)
+			return;
+		open = false;
+		setTimeout(function(){open = true;},1000);
+		
+		let selectedPlayer = $("#" + name);
+		selectedPlayer.addClass("selected border-success");
+		setTimeout(function(){selectedPlayer.removeClass("selected border-success");},50);
+		setTimeout(function(){selectedPlayer.addClass("selected border-success");},100);
+		setTimeout(function(){selectedPlayer.removeClass("selected border-success");},1000);
+	}
+	
+	function setScore(name, score)
+	{
+		players[name] = score;
+		updateHTML();
+	}
+	  
+	updateHTML();
+	
+	socket.on("message", function(data) {
+	console.log(data);
+	});
+	
+	socket.on("join", function(data) {
+		addPlayer(data);
+	});
+	
+	socket.on("leave", function(data) {
+		removePlayer(data);
+	});
+	
+	socket.on("increment", function(data) {
+		incPlayer(data)
+	});
+	
+	socket.on("buzz", function(data) {
+		selectPlayer(data)
+	});
+	
+	socket.on("state", function(data) {
+		players = {}
+		var playerData = data.split('*')
+		for (i = 0; i < playerData.length-1; i++) {
+			pData = playerData[i].split('#')
+			addPlayer(pData[0]);
+			setScore(pData[0],pData[1])
+			
+		}
+	});
+	
+    </script>
+  </body>
+</html>
